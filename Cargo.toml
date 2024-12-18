@@ -5,9 +5,12 @@ edition = "2021"
 authors = ["BlankyWacky"]
 description = "Allows you to control your mouse with Razer Synapse"
 license = "MIT"
+repository = "https://github.com/BlankyWacky/razerctl"
+homepage = "https://github.com/BlankyWacky/razerctl"
 readme = "README.md"
 keywords = ["razer", "synapse", "mouse", "api", "windows"]
 categories = ["hardware-support", "memory-management", "api-bindings"]
+rust-version = "1.56"
 
 [dependencies]
 windows = { version = "0.58.0", features = [

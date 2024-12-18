@@ -120,7 +120,7 @@ fn send_mouse_ioctl(data: &MouseIoctlStruct) -> Result<(), Error> {
             Some(&mut bytes_returned),
             None,
         );
-        
+
         if let Err(err) = result {
             eprintln!("DeviceIoControl failed: {:?}", err);
             // Attempt to reinitialize device
