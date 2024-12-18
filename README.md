@@ -18,11 +18,10 @@ This crate uses `unsafe` code for Windows API interactions but provides safe abs
 
 ## Installation
 
-Add this to your `Cargo.toml`:
+In your root project folder, run the following to add razerctl to your dependencies.
 
-```toml
-[dependencies]
-razerctl = "0.1.0"
+```bash
+cargo add razerctl
 ```
 
 ## Quick Start
