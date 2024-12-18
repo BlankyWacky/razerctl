@@ -1,6 +1,6 @@
 [package]
 name = "razerctl"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["BlankyWacky"]
 description = "Allows you to control your mouse with Razer Synapse"
@@ -26,3 +26,8 @@ windows = { version = "0.58.0", features = [
     "Wdk_Storage_FileSystem",
     "Wdk_System_SystemServices",
 ] }
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+features = ["Win32_Foundation"]
+rustdoc-args = ["--cfg", "docsrs"]

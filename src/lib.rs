@@ -13,12 +13,16 @@ use windows::{
     },
 };
 
+/// Global device handle
 static mut DEVICE: HANDLE = HANDLE(ptr::null_mut());
 
+/// Maximum value for mouse coordinates
 const MAX_MOUSE_COORD: i32 = 32767;
+
+/// IOCTL code for mouse control operations
 const IOCTL_MOUSE: u32 = 0x88883020;
 
-//Struct used to represent the mouse input parameters for device control
+/// Structure for mouse control parameters
 #[repr(C)]
 #[derive(Copy, Clone)]
 struct MouseIoctlStruct {
@@ -32,7 +36,21 @@ struct MouseIoctlStruct {
     field8: i32,
 }
 
-///Initializes the device by opening a handle to the symbolic link
+/// This function attempts to find and open a handle to the Razer device
+/// through its symbolic link. It must be called before using any other
+/// functions in this library.
+/// 
+/// # Returns
+/// * `Ok(())` - Device initialized successfully
+/// * `Err(Error)` - Failed to initialize device
+/// 
+/// # Example
+/// ```rust
+/// fn main() -> std::io::Result<()> {
+///     razerctl::init()?;
+///     Ok(())
+/// }
+/// ```
 #[allow(static_mut_refs)]
 pub fn init() -> Result<(), Error> {
     unsafe {
@@ -75,7 +93,26 @@ pub fn init() -> Result<(), Error> {
     }
 }
 
-///Moves the mouse to the specified coordinates
+/// Moves the mouse cursor to specified coordinates
+/// 
+/// # Arguments
+/// * `x` - X coordinate (-32767 to 32767)
+/// * `y` - Y coordinate (-32767 to 32767)
+/// * `from_start_point` - If true, moves relative to the current position
+/// 
+/// # Returns
+/// * `Ok(())` - Mouse moved successfully
+/// * `Err(Error)` - Failed to move mouse
+/// 
+/// # Example
+/// ```rust
+/// fn main() -> std::io::Result<()> {
+///     razerctl::init()?;
+///     // Move mouse to absolute position (100, 100)
+///     razerctl::mouse_move(100, 100, false)?;
+///     Ok(())
+/// }
+/// ```
 pub fn mouse_move(x: i32, y: i32, from_start_point: bool) -> Result<(), Error> {
     let ioctl_struct = MouseIoctlStruct {
         field1: 0,
@@ -106,6 +143,14 @@ pub fn mouse_click(up_down: i32) -> Result<(), Error> {
     send_mouse_ioctl(&ioctl_struct)
 }
 
+/// Internal function to send mouse control commands to the device
+/// 
+/// # Arguments
+/// * `data` - Mouse control parameters
+/// 
+/// # Returns
+/// * `Ok(())` - Command sent successfully
+/// * `Err(Error)` - Failed to send command
 fn send_mouse_ioctl(data: &MouseIoctlStruct) -> Result<(), Error> {
     unsafe {
         let mut bytes_returned = 0u32;
