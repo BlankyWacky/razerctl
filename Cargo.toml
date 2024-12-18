@@ -2,6 +2,12 @@
 name = "razerctl"
 version = "0.1.0"
 edition = "2021"
+authors = ["BlankyWacky"]
+description = "Allows you to control your mouse with Razer Synapse"
+license = "MIT"
+readme = "README.md"
+keywords = ["razer", "synapse", "mouse", "control", "reverse-engineering", "ioctl"]
+categories = ["hardware-interfaces", "system-programming"]
 
 [dependencies]
 windows = { version = "0.58.0", features = [
