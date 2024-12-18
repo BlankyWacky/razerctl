@@ -6,8 +6,8 @@ authors = ["BlankyWacky"]
 description = "Allows you to control your mouse with Razer Synapse"
 license = "MIT"
 readme = "README.md"
-keywords = ["razer", "synapse", "mouse", "control", "reverse-engineering", "ioctl"]
-categories = ["hardware-interfaces", "system-programming"]
+keywords = ["razer", "synapse", "mouse", "control", "reverse-engineering", "ioctl", "windows"]
+categories = ["hardware-support", "memory-management", "api-bindings"]
 
 [dependencies]
 windows = { version = "0.58.0", features = [
