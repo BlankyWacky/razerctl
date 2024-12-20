@@ -48,11 +48,14 @@ fn main() -> Result<(), Error> {
 Run the included examples:
 
 ```bash
+# Fast mouse movement demo
+cargo run --example mouse_click
+
 # Basic mouse movement demo
-cargo run --example basic_mouse_move
+cargo run --example mouse_move1
 
 # Fast mouse movement demo
-cargo run --example fast_mouse_move
+cargo run --example mouse_move2
 ```
 
 ## Contributing
