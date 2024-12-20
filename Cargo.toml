@@ -1,26 +1,22 @@
 [package]
 name = "razerctl"
-version = "0.1.2"
-edition = "2021"
 authors = ["BlankyWacky"]
+version = "0.2.0"
+edition = "2021"
 description = "Allows you to control your mouse with Razer Synapse"
-license = "MIT"
-repository = "https://github.com/BlankyWacky/razerctl"
-homepage = "https://github.com/BlankyWacky/razerctl"
+repository = "github.com/BlankyWacky/razerctl"
+homepage = "docs.rs/crate/razerctl/latest"
 readme = "README.md"
 keywords = ["razer", "synapse", "mouse", "api", "windows"]
 categories = ["hardware-support", "memory-management", "api-bindings"]
 rust-version = "1.56"
+license = "MIT"
 
-[dependencies]
+[target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.58.0", features = [
-    "Win32_Foundation",
     "Win32_Security",
     "Win32_System_IO",
     "Win32_Storage_FileSystem",
-    "Win32_System_WindowsProgramming",
-    "Win32_System_Threading",
-    "Win32_System_SystemServices",
     "Win32_System_Kernel",
     "Wdk_Foundation",
     "Wdk_Storage_FileSystem",
@@ -28,6 +24,4 @@ windows = { version = "0.58.0", features = [
 ] }
 
 [package.metadata.docs.rs]
-default-target = "x86_64-pc-windows-msvc"
-features = ["Win32_Foundation"]
-rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-pc-windows-msvc"]
