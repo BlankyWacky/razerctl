@@ -1,4 +1,4 @@
-use razerctl::{init, mouse_click};
+use razerctl::{init, mouse_click, MouseButton};
 use std::io::Error;
 
 fn main() -> Result<(), Error> {
@@ -13,20 +13,20 @@ fn main() -> Result<(), Error> {
         }
     }
 
-    print_send_mouse_click(true);
+    send_left_click(true);
     std::thread::sleep(std::time::Duration::from_secs(1));
-    print_send_mouse_click(false);
+    send_left_click(false);
 
     Ok(())
 }
 
-fn print_send_mouse_click(up_down: bool) {
-    match mouse_click(up_down) {
+fn send_left_click(up_down: bool) {
+    match mouse_click(MouseButton::Left, up_down) {
         Ok(_) => {
-            println!("Mouse click sent: {}", up_down);
+            println!("Left click sent: {}", up_down);
         }
         Err(e) => {
-            eprintln!("Error sending mouse click: {}", e);
+            eprintln!("Error sending left click: {}", e);
         }
     }
 }

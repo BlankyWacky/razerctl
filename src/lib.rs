@@ -1,10 +1,9 @@
-mod nt;
-
 use std::{ffi::c_void, io::Error, ptr};
+use types::*;
 use windows::{
     core::PCWSTR,
     Win32::{
-        Foundation::{CloseHandle, HANDLE},
+        Foundation::{CloseHandle, GENERIC_WRITE, HANDLE},
         Storage::FileSystem::{
             CreateFileW, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_READ, FILE_SHARE_WRITE,
             OPEN_EXISTING,
@@ -13,65 +12,47 @@ use windows::{
     },
 };
 
+mod types;
+mod utils;
+
 /// Global device handle
 static mut DEVICE: HANDLE = HANDLE(ptr::null_mut());
 
-/// Maximum value for mouse coordinates
-const MAX_MOUSE_COORD: i32 = 32767;
-
 /// IOCTL code for communicating with the Razer device
-const IOCTL_MOUSE: u32 = 0x88883020;
+const RAZER_IOCTL_CODE: u32 = 0x88883020;
 
-/// Structure for mouse control parameters
-#[repr(C)]
-#[derive(Copy, Clone, Default)]
-struct MouseIoctlStruct {
-    field1: i32,
-    field2: i32,
-    max_val: i32,
-    up_down: i32,
-    field5: i32,
-    x_coord: i32,
-    y_coord: i32,
-    field8: i32,
-}
-
-/// Sets up the device handle for communication
+/// Initializes the connection to the Razer device.
 ///
-/// # Returns
-/// * `Ok(())` - Device initialized successfully
-/// * `Err(Error)` - Failed to initialize device
+/// This function:
+/// 1. Closes any existing device handle.
+/// 2. Locates the Razer device's symbolic link.
+/// 3. Opens a handle to the device for communication.
 ///
-/// # Example
-/// ```rust
-/// fn main() -> std::io::Result<()> {
-///     razerctl::init()?;
-///     Ok(())
-/// }
-/// ```
+/// # Errors
+///
+/// Returns an `Error` if the device handle cannot be opened or if the symbolic link cannot be found.
 #[allow(static_mut_refs)]
 pub fn init() -> Result<(), Error> {
     unsafe {
-        //Close the device handle if it already exists
+        // Clean up existing handle if present
         if !DEVICE.is_invalid() {
-            let _ = CloseHandle(DEVICE);
+            CloseHandle(DEVICE).ok();
         }
 
-        //Find the symbolic link to the device
-        match nt::find_sym_link("\\GLOBAL??", "RZCONTROL") {
+        // Locate and connect to the Razer device
+        match utils::find_sym_link("\\GLOBAL??", "RZCONTROL") {
             Ok(name) => {
                 let sym_link = format!("\\\\?\\{}", name);
                 let wide_name: Vec<u16> = sym_link.encode_utf16().chain(Some(0)).collect();
 
-                // Open a handle to the device using the symbolic link.
                 let handle = CreateFileW(
                     PCWSTR(wide_name.as_ptr()),
-                    0,
+                    GENERIC_WRITE.0,
                     FILE_SHARE_READ | FILE_SHARE_WRITE,
                     None,
                     OPEN_EXISTING,
                     FILE_FLAGS_AND_ATTRIBUTES(0),
-                    HANDLE::default(),
+                    None,
                 );
 
                 // If the handle is valid, set the global DEVICE variable to the handle, otherwise return an error
@@ -91,102 +72,114 @@ pub fn init() -> Result<(), Error> {
     }
 }
 
-/// Moves the mouse cursor to specified coordinates
+/// Send a relative mouse move event with the specified coordinates.
 ///
 /// # Arguments
-/// * `x` - X coordinate (-32767 to 32767)
-/// * `y` - Y coordinate (-32767 to 32767)
-/// * `from_start_point` - If true, moves relative to the current position
 ///
-/// # Returns
-/// * `Ok(())` - Mouse moved successfully
-/// * `Err(Error)` - Failed to move mouse
+/// * `x` - The x-coordinate of the mouse movement.
+/// * `y` - The y-coordinate of the mouse movement.
 ///
-/// # Example
-/// ```rust
-/// fn main() -> std::io::Result<()> {
-///     razerctl::init()?;
-///     // Move mouse to absolute position (100, 100)
-///     razerctl::mouse_move(100, 100, false)?;
-///     Ok(())
-/// }
-/// ```
-pub fn mouse_move(x: i32, y: i32, from_start_point: bool) -> Result<(), Error> {
-    if !(-MAX_MOUSE_COORD..=MAX_MOUSE_COORD).contains(&x)
-        || !(-MAX_MOUSE_COORD..=MAX_MOUSE_COORD).contains(&y)
-    {
-        return Err(Error::new(
-            std::io::ErrorKind::InvalidInput,
-            format!(
-                "Coordinates out of range, must be between {} and {}",
-                -MAX_MOUSE_COORD, MAX_MOUSE_COORD
-            ),
-        ));
+/// # Errors
+///
+/// Returns an `Error` if the control command cannot be sent to the device.
+pub fn mouse_move(x: i32, y: i32) -> Result<(), Error> {
+    let mut control = RzControl::new(Type::Mouse);
+    unsafe {
+        let mouse_data = control.mouse_data_mut();
+
+        mouse_data.x = x;
+        mouse_data.y = y;
+        mouse_data.absolute_coord = 0; //TODO: Not working as expected
+        mouse_data.movement = 1; // Movement flag, set to 1 to indicate a movement
+        mouse_data.button_flags = MouseButtons::new(); // Initialize button states
+
+        send_control(&control)
+    }
+}
+
+/// Represents mouse buttons.
+pub enum MouseButton {
+    Left,
+    Right,
+    Middle,
+    X1,
+    X2,
+}
+
+/// Send a mouse button click event.
+///
+/// # Arguments
+///
+/// * `button` - The mouse button to click.
+/// * `down` - `true` if the button is pressed down, `false` if the button is released.
+///
+/// # Errors
+///
+/// Returns an `Error` if the control command cannot be sent to the device.
+pub fn mouse_click(button: MouseButton, down: bool) -> Result<(), Error> {
+    let mut control = RzControl::new(Type::Mouse);
+
+    unsafe {
+        let mouse_data = control.mouse_data_mut();
+
+        mouse_data.button_flags = MouseButtons::new();
+
+        match (button, down) {
+            (MouseButton::Left, true) => mouse_data.button_flags.set_flag(L_BUTTON_DOWN, true),
+            (MouseButton::Left, false) => mouse_data.button_flags.set_flag(L_BUTTON_UP, true),
+            (MouseButton::Right, true) => mouse_data.button_flags.set_flag(R_BUTTON_DOWN, true),
+            (MouseButton::Right, false) => mouse_data.button_flags.set_flag(R_BUTTON_UP, true),
+            (MouseButton::Middle, true) => mouse_data.button_flags.set_flag(M_BUTTON_DOWN, true),
+            (MouseButton::Middle, false) => mouse_data.button_flags.set_flag(M_BUTTON_UP, true),
+            (MouseButton::X1, true) => mouse_data.button_flags.set_flag(X_BUTTON1_DOWN, true),
+            (MouseButton::X1, false) => mouse_data.button_flags.set_flag(X_BUTTON1_UP, true),
+            (MouseButton::X2, true) => mouse_data.button_flags.set_flag(X_BUTTON2_DOWN, true),
+            (MouseButton::X2, false) => mouse_data.button_flags.set_flag(X_BUTTON2_UP, true),
+        }
     }
 
-    let ioctl_struct = MouseIoctlStruct {
-        field2: 2,
-        max_val: if from_start_point { 0 } else { MAX_MOUSE_COORD },
-        x_coord: x,
-        y_coord: y,
-        ..Default::default()
-    };
-
-    send_mouse_ioctl(&ioctl_struct)
+    send_control(&control)
 }
 
-/// Sends either a left click mouse down
-/// 
+/// Send a keyboard input event.
+///
 /// # Arguments
-/// * `up_or_down` - If true, sends a left mouse button down event; if false, sends a left mouse button up event
-/// 
-/// # Returns
-/// * `Ok(())` - Mouse click event successfully sent
-/// * `Err(Error)` - Failed to send mouse click event
-/// 
-/// # Example
-/// ```rust
-/// fn main() -> std::io::Result<()> {
-///     razerctl::init()?;
-///     // Simulate left mouse button press (down)
-///     razerctl::mouse_click(true)?;
-///     // Simulate left mouse button release (up)
-///     razerctl::mouse_click(false)?;
-///     Ok(())
-/// }
-/// ```
-pub fn mouse_click(up_or_down: bool) -> Result<(), Error> {
-    let ioctl_struct = MouseIoctlStruct {
-        field1: 0,
-        field2: 2,
-        max_val: 0,
-        up_down: if up_or_down { 1 } else { 2 },
-        field5: 0,
-        x_coord: 0,
-        y_coord: 0,
-        field8: 1,
-    };
+///
+/// * `vk` - The virtual key code of the key to send.
+///
+/// # Errors
+///
+/// Returns an `Error` if the control command cannot be sent to the device.
+pub fn keyboard_input(vk: u8) -> Result<(), Error> {
+    let mut control = RzControl::new(Type::Keyboard);
 
-    send_mouse_ioctl(&ioctl_struct)
+    unsafe {
+        let keyboard_data = control.keyboard_data_mut();
+        keyboard_data.key = vk as i16;
+        keyboard_data.action = 0;
+
+        send_control(&control)
+    }
 }
 
-/// Internal function to send mouse control commands to the device
+/// Internal function to send commands to the device.
 ///
 /// # Arguments
-/// * `data` - Mouse control parameters
 ///
-/// # Returns
-/// * `Ok(())` - Command sent successfully
-/// * `Err(Error)` - Failed to send command
-fn send_mouse_ioctl(data: &MouseIoctlStruct) -> Result<(), Error> {
+/// * `data` - The control data to send.
+///
+/// # Errors
+///
+/// Returns an `Error` if the control command cannot be sent to the device or if the device needs to be reinitialized.
+fn send_control(data: &RzControl) -> Result<(), Error> {
     unsafe {
         let mut bytes_returned = 0u32;
 
         let result = DeviceIoControl(
             DEVICE,
-            IOCTL_MOUSE,
+            RAZER_IOCTL_CODE,
             Some(data as *const _ as *const c_void),
-            std::mem::size_of::<MouseIoctlStruct>() as u32,
+            std::mem::size_of::<RzControl>() as u32,
             None,
             0,
             Some(&mut bytes_returned),

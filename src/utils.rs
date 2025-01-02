@@ -17,7 +17,34 @@ struct ObjectDirectoryInformation {
     type_name: UNICODE_STRING,
 }
 
-// Finds a symbolic link in the specified directory by name.
+/// Finds a symbolic link in the specified directory by name.
+///
+/// # Arguments
+///
+/// * `dir` - A string slice that holds the path of the directory to search in.
+/// * `name` - A string slice that holds the name of the symbolic link to find.
+///
+/// # Returns
+///
+/// * `Ok(String)` - The name of the found symbolic link.
+/// * `Err(Error)` - An error if the symbolic link is not found or if an unexpected error occurs.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// * The directory cannot be opened.
+/// * The query to the directory fails.
+/// * The symbolic link name is not found in the directory.
+///
+/// # Example
+///
+/// ```rust
+/// let result = find_sym_link("C:\\Windows\\System32", "symlink_name");
+/// match result {
+///     Ok(name) => println!("Found symbolic link: {}", name),
+///     Err(e) => eprintln!("Error: {}", e),
+/// }
+/// ```
 pub fn find_sym_link(dir: &str, name: &str) -> Result<String, Error> {
     // Open the directory for querying symbolic links.
     let dir_handle = open_directory(None, dir, DIRECTORY_QUERY)?;

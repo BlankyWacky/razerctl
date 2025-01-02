@@ -30,7 +30,7 @@ fn circle() -> Result<(), Error> {
     for i in 0..360 {
         let x = (i as f64).to_radians().cos() * 5.0;
         let y = (i as f64).to_radians().sin() * 5.0;
-        mouse_move(x as i32, y as i32, false)?;
+        mouse_move(x as i32, y as i32)?;
         thread::sleep(Duration::from_millis(1));
     }
     Ok(())

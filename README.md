@@ -1,6 +1,6 @@
 # razerctl
 
-A Rust port of the [original rzctl project](https://github.com/Sadmeme/rzctl), allows you to control your mouse with Razer Synapse
+A rust library which allows you to control your mouse with Razer Synapse
 
 ## Requirements
 
@@ -14,7 +14,8 @@ This crate uses `unsafe` code for Windows API interactions but provides safe abs
 ## Features
 
 - ✅ Currently supports mouse movement/clicking
-- ❌ No support for keyboard yet
+- ✅ Supports sending keyboard inputs
+- ❌ No support for keyboard dictionary yet, you'll have to experiment yourself for now
 
 ## Installation
 
@@ -35,8 +36,8 @@ fn main() -> Result<(), Error> {
     // Initialize with default settings
     init()?;
     
-    // Move mouse to coordinates (100, 100)
-    mouse_move(100, 100, true)?;
+    // Move mouse to relative coordinates (100, 100)
+    mouse_move(100, 100)?;
     
     Ok(())
 }
@@ -48,8 +49,8 @@ fn main() -> Result<(), Error> {
 Run the included examples:
 
 ```bash
-# Fast mouse movement demo
-cargo run --example mouse_click
+# Mouse clicking demo
+cargo run --example left_click
 
 # Basic mouse movement demo
 cargo run --example mouse_move1

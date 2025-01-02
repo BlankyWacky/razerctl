@@ -15,13 +15,13 @@ fn main() -> Result<(), Error> {
 
     //Move mouse in a square pattern
     for _ in 0..3 {
-        mouse_move(100, 0, true)?;
+        mouse_move(100, 0)?;
         thread::sleep(Duration::from_millis(500));
-        mouse_move(0, 100, true)?;
+        mouse_move(0, 100)?;
         thread::sleep(Duration::from_millis(500));
-        mouse_move(-100, 0, true)?;
+        mouse_move(-100, 0)?;
         thread::sleep(Duration::from_millis(500));
-        mouse_move(0, -100, true)?;
+        mouse_move(0, -100)?;
         thread::sleep(Duration::from_millis(500));
     }
 
