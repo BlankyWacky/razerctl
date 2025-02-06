@@ -1,5 +1,9 @@
 # razerctl
 
+[![crates.io](https://img.shields.io/crates/v/razerctl.svg)](https://crates.io/crates/razerctl)
+[![Docs.rs](https://docs.rs/razerctl/badge.svg)](https://docs.rs/razerctl)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 A rust library which allows you to control your mouse with Razer Synapse
 
 ## Requirements

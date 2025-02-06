@@ -9,7 +9,7 @@ homepage = "https://docs.rs/crate/razerctl/latest"
 readme = "README.md"
 keywords = ["razer", "synapse", "mouse", "api", "windows"]
 categories = ["hardware-support", "memory-management", "api-bindings"]
-rust-version = "1.80.0"
+rust-version = "1.56.0"
 license = "MIT"
 
 [target.'cfg(target_os = "windows")'.dependencies]
