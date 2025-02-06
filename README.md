@@ -9,6 +9,7 @@ A rust library which allows you to control your mouse with Razer Synapse
 ## Requirements
 
 - Windows operating system
+- Razer Synapse installed
 - Rust 1.56 or higher
 
 ## Safety
@@ -17,9 +18,13 @@ This crate uses `unsafe` code for Windows API interactions but provides safe abs
 
 ## Features
 
+- ✅ Safe abstractions around unsafe code
 - ✅ Currently supports mouse movement/clicking
 - ✅ Supports sending keyboard inputs
-- ❌ No support for keyboard dictionary yet, you'll have to experiment yourself for now
+
+## Planned Features
+
+❌ No support for keyboard dictionary yet, you'll have to experiment yourself for now
 
 ## Installation
 
