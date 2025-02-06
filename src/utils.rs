@@ -7,9 +7,8 @@ use windows::Wdk::Foundation::{NtClose, OBJECT_ATTRIBUTES};
 use windows::Wdk::Storage::FileSystem::{NtOpenDirectoryObject, NtQueryDirectoryObject};
 use windows::Wdk::System::SystemServices::DIRECTORY_QUERY;
 use windows::Win32::Foundation::{
-    BOOLEAN, HANDLE, NTSTATUS, STATUS_BUFFER_TOO_SMALL, STATUS_SUCCESS, UNICODE_STRING,
+    HANDLE, NTSTATUS, OBJ_CASE_INSENSITIVE, STATUS_BUFFER_TOO_SMALL, STATUS_SUCCESS, UNICODE_STRING
 };
-use windows::Win32::System::Kernel::OBJ_CASE_INSENSITIVE;
 
 #[repr(C)]
 struct ObjectDirectoryInformation {
@@ -61,8 +60,8 @@ pub fn find_sym_link(dir: &str, name: &str) -> Result<String, Error> {
                 dir_handle,
                 Some(std::ptr::null_mut()), // No buffer initially, just checking space.
                 0,                          // No data to fetch yet.
-                BOOLEAN(1),                 // Request a single entry.
-                BOOLEAN(0),                 // Don't restart the scan.
+                true,                 // Request a single entry.
+                false,                // Don't restart the scan.
                 &mut query_context,         // Context to continue the search.
                 Some(&mut length),          // Length of the buffer to be filled.
             );
@@ -85,8 +84,8 @@ pub fn find_sym_link(dir: &str, name: &str) -> Result<String, Error> {
                 dir_handle,
                 Some(buffer.as_mut_ptr() as *mut c_void),
                 length,
-                BOOLEAN(1),         // Request a single entry.
-                BOOLEAN(0),         // Don't restart the scan.
+                true,         // Request a single entry.
+                false,        // Don't restart the scan.
                 &mut query_context, // Context to continue the search.
                 Some(&mut length),  // Length of the filled data.
             );
@@ -144,7 +143,7 @@ fn open_directory(
         Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
         RootDirectory: root_handle.unwrap_or_default(),
         ObjectName: &us_dir as *const _,
-        Attributes: OBJ_CASE_INSENSITIVE as u32,
+        Attributes: OBJ_CASE_INSENSITIVE,
         ..Default::default()
     };
 
