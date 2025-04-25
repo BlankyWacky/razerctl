@@ -1,7 +1,7 @@
 [package]
 name = "razerctl"
 authors = ["BlankyWacky"]
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 description = "Allows you to control your mouse with Razer Synapse"
 repository = "https://github.com/BlankyWacky/razerctl"
@@ -13,7 +13,7 @@ rust-version = "1.56.0"
 license = "MIT"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows = { version = "0.59.0", features = [
+windows = { version = "0.61.1", features = [
     "Win32_Security",
     "Win32_System_IO",
     "Win32_Storage_FileSystem",
