@@ -34,15 +34,19 @@ pub struct MouseInputData {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct KeyboardInputData {
-    pub unk1: u16,
-    pub key: i16,
-    pub action: u16,
-    pub unk2: u16,
-    pub unk3: u32,
-    pub unk4: u32,
-    pub unk5: u32,
-    pub unk6: u32,
+    pub unit_id: u16,       // Unused, can be 0
+    pub make_code: u16,     // The hardware scan code for the key
+    pub flags: u16,         // KEY_MAKE, KEY_BREAK, KEY_E0, KEY_E1
+    pub reserved: u16,      // Must be 0
+    pub extra_information: u32, // Unused, can be 0
 }
+
+// Flags for KeyboardInputData.flags
+pub const KEY_MAKE: u16 = 0;
+pub const KEY_BREAK: u16 = 1;
+pub const KEY_E0: u16 = 2;
+pub const KEY_E1: u16 = 4;
+
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

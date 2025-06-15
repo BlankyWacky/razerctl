@@ -12,6 +12,7 @@ use windows::{
     },
 };
 
+mod key_translation;
 mod types;
 mod utils;
 
@@ -141,22 +142,60 @@ pub fn mouse_click(button: MouseButton, down: bool) -> Result<(), Error> {
     send_control(&control)
 }
 
-/// Send a keyboard input event.
+/// Sends a key down (press) event.
 ///
 /// # Arguments
 ///
-/// * `vk` - The virtual key code of the key to send.
+/// * `vk` - The virtual key code of the key to press.
 ///
 /// # Errors
 ///
-/// Returns an `Error` if the control command cannot be sent to the device.
-pub fn keyboard_input(vk: u8) -> Result<(), Error> {
-    let mut control = RzControl::new(Type::Keyboard);
+/// Returns an `Error` if the key is unknown or the command fails.
+pub fn key_down(vk: u8) -> Result<(), Error> {
+    send_keyboard_input(vk, true)
+}
 
+/// Sends a key up (release) event.
+///
+/// # Arguments
+///
+/// * `vk` - The virtual key code of the key to release.
+///
+/// # Errors
+///
+/// Returns an `Error` if the key is unknown or the command fails.
+pub fn key_up(vk: u8) -> Result<(), Error> {
+    send_keyboard_input(vk, false)
+}
+
+/// Internal function to send a keyboard input event with translated scan codes.
+fn send_keyboard_input(vk: u8, is_down: bool) -> Result<(), Error> {
+    let usage_id = key_translation::vk_to_usage_id(vk);
+    if usage_id == 0 {
+        return Err(Error::new(std::io::ErrorKind::InvalidInput, "Unknown virtual key code"));
+    }
+
+    let make_code = key_translation::usage_id_to_make_code(usage_id);
+    if make_code < 0 {
+        return Err(Error::new(std::io::ErrorKind::InvalidInput, "Failed to map key to scan code"));
+    }
+
+    let mut control = RzControl::new(Type::Keyboard);
     unsafe {
         let keyboard_data = control.keyboard_data_mut();
-        keyboard_data.key = vk as i16;
-        keyboard_data.action = 0;
+
+        keyboard_data.make_code = make_code as u16;
+
+        // Set flags based on key state and if it's an extended key
+        keyboard_data.flags = if is_down { types::KEY_MAKE } else { types::KEY_BREAK };
+        if key_translation::is_extended_key(vk) {
+            keyboard_data.flags |= types::KEY_E0;
+        }
+
+        // Set other fields to 0
+        keyboard_data.unit_id = 0;
+        keyboard_data.reserved = 0;
+        keyboard_data.extra_information = 0;
 
         send_control(&control)
     }

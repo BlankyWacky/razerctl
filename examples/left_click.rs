@@ -2,16 +2,8 @@ use razerctl::{init, mouse_click, MouseButton};
 use std::io::Error;
 
 fn main() -> Result<(), Error> {
-    //Initialize with default settings
-    match init() {
-        Ok(_) => {
-            println!("Initialized");
-        }
-        Err(e) => {
-            eprintln!("Error initializing: {}", e);
-            return Err(e);
-        }
-    }
+    init()?;
+    println!("Initialized");
 
     send_left_click(true);
     std::thread::sleep(std::time::Duration::from_secs(1));

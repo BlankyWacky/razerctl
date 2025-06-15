@@ -4,73 +4,95 @@
 [![Docs.rs](https://docs.rs/razerctl/badge.svg)](https://docs.rs/razerctl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A rust library which allows you to control your mouse with Razer Synapse
+A low-level Rust library for controlling Razer mouse and keyboard input directly through the Razer Synapse driver on Windows.
+
+## Features
+
+- ✅ **Relative Mouse Movement**: Move the mouse cursor by a given x/y offset.
+- ✅ **Mouse Button Clicks**: Simulate press and release events for all standard mouse buttons (Left, Right, Middle, X1, X2).
+- ✅ **Keyboard Key Presses**: Simulate key down and key up events for a comprehensive set of keyboard keys.
+- ✅ **Safe Abstractions**: Provides a safe and simple public API that handles the underlying `unsafe` Windows API and driver interactions.
+
+## How It Works
+
+This library works by locating the symbolic link to the `RZCONTROL` device created by the Razer Synapse driver and communicating with it directly using `DeviceIoControl`.
+
+Keyboard input is not sent using standard Windows scan codes. Instead, this crate implements a custom translation layer that converts standard Virtual-Key (VK) codes into the specific `MakeCode` values the Razer driver expects. This logic was ported from the IbInputSimulator C++ project.
 
 ## Requirements
 
 - Windows operating system
-- Razer Synapse installed
+- Razer Synapse 3 installed
 - Rust 1.56 or higher
-
-## Safety
-
-This crate uses `unsafe` code for Windows API interactions but provides safe abstractions for users. All unsafe operations are thoroughly documented and contained within the implementation.
-
-## Features
-
-- ✅ Safe abstractions around unsafe code
-- ✅ Currently supports mouse movement/clicking
-- ✅ Supports sending keyboard inputs
-
-## Planned Features
-
-❌ No support for keyboard dictionary yet, you'll have to experiment yourself for now
 
 ## Installation
 
-In your root project folder, run the following to add razerctl to your dependencies.
-
+**1. Add `razerctl` to your project:**
 ```bash
 cargo add razerctl
 ```
 
+**2. (Recommended) Add `win_key_codes` for easy keyboard control:**
+
+For sending keyboard input, you need to provide Windows Virtual-Key codes. The `win_key_codes` crate provides convenient constants for these codes.
+
+```bash
+cargo add win_key_codes
+```
+
 ## Quick Start
 
-```rust
-use std::io::Error;
+Here is a quick example of how to initialize the library, move the mouse, and press the 'A' key.
 
-use razerctl::{init, mouse_move};
+```rust
+use std::{io::Error, thread, time::Duration};
+use razerctl::{init, mouse_move, key_down, key_up};
+use win_key_codes::VK_A; // Use a constant for the 'A' key
 
 fn main() -> Result<(), Error> {
-    // Initialize with default settings
+    // 1. Initialize the connection to the Razer driver
     init()?;
-    
-    // Move mouse to relative coordinates (100, 100)
+    println!("Razer driver initialized.");
+
+    // 2. Move the mouse relatively by (100, 100) pixels
+    println!("Moving mouse...");
     mouse_move(100, 100)?;
-    
+
+    // Give a moment for the mouse move to be visible
+    thread::sleep(Duration::from_secs(1));
+
+    // 3. Simulate pressing and releasing the 'A' key
+    println!("Pressing the 'A' key...");
+    key_down(VK_A)?;
+    thread::sleep(Duration::from_millis(50)); // Hold the key for 50ms
+    key_up(VK_A)?;
+
+    println!("Done!");
     Ok(())
 }
 ```
 
+## Safety
+
+This crate uses `unsafe` code to interface with the Windows API and the device driver. However, the public API is designed to be a completely safe abstraction over these details. All `unsafe` blocks are contained internally and have been written with care.
 
 ## Examples
 
-Run the included examples:
+You can run the included examples from the project root:
 
 ```bash
-# Mouse clicking demo
+# --- Mouse Examples ---
 cargo run --example left_click
-
-# Basic mouse movement demo
 cargo run --example mouse_move1
-
-# Fast mouse movement demo
 cargo run --example mouse_move2
+
+# --- Keyboard Example ---
+cargo run --example keyboard_test
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! If you find a bug or have an idea for an improvement, please feel free to submit an issue or a pull request.
 
 ## License
 

@@ -2,18 +2,10 @@ use razerctl::{init, mouse_move};
 use std::{io::Error, thread, time::Duration};
 
 fn main() -> Result<(), Error> {
-    //Initialize with default settings
-    match init() {
-        Ok(_) => {
-            println!("Initialized");
-        }
-        Err(e) => {
-            eprintln!("Error initializing: {:?}", e);
-            return Err(e);
-        }
-    }
+    init()?;
+    println!("Initialized");
 
-    //Draw circles with the mouse for 3 seconds, then exit
+    // Draw circles with the mouse for 3 seconds, then exit
     let start = std::time::Instant::now();
     while start.elapsed() < Duration::from_secs(3) {
         circle()?;
