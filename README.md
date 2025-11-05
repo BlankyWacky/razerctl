@@ -19,6 +19,9 @@ This library works by locating the symbolic link to the `RZCONTROL` device creat
 
 Keyboard input is not sent using standard Windows scan codes. Instead, this crate implements a custom translation layer that converts standard Virtual-Key (VK) codes into the specific `MakeCode` values the Razer driver expects. This logic was ported from the IbInputSimulator C++ project.
 
+## Disclaimer & Important Notes
+⚠️ Anti-Cheat Software: This tool directly controls input at a low level. This behavior is often characteristic of cheating software. It may be flagged by anti-cheat systems in video games. Use at your own risk. This project is intended for educational and legitimate automation purposes.
+
 ## Requirements
 
 - Windows operating system
@@ -38,38 +41,6 @@ For sending keyboard input, you need to provide Windows Virtual-Key codes. The `
 
 ```bash
 cargo add win_key_codes
-```
-
-## Quick Start
-
-Here is a quick example of how to initialize the library, move the mouse, and press the 'A' key.
-
-```rust
-use std::{io::Error, thread, time::Duration};
-use razerctl::{init, mouse_move, key_down, key_up};
-use win_key_codes::VK_A; // Use a constant for the 'A' key
-
-fn main() -> Result<(), Error> {
-    // 1. Initialize the connection to the Razer driver
-    init()?;
-    println!("Razer driver initialized.");
-
-    // 2. Move the mouse relatively by (100, 100) pixels
-    println!("Moving mouse...");
-    mouse_move(100, 100)?;
-
-    // Give a moment for the mouse move to be visible
-    thread::sleep(Duration::from_secs(1));
-
-    // 3. Simulate pressing and releasing the 'A' key
-    println!("Pressing the 'A' key...");
-    key_down(VK_A)?;
-    thread::sleep(Duration::from_millis(50)); // Hold the key for 50ms
-    key_up(VK_A)?;
-
-    println!("Done!");
-    Ok(())
-}
 ```
 
 ## Safety
