@@ -6,6 +6,25 @@
 
 A low-level Rust library for controlling Razer mouse and keyboard input directly through the Razer Synapse driver on Windows.
 
+## Usage
+
+```rust
+use razerctl::{RazerDevice, MouseButton};
+
+fn main() -> Result<(), std::io::Error> {
+    let mut device = RazerDevice::new()?;
+    
+    // Move mouse (relative x, y)
+    device.mouse_move(100, 100)?;
+    
+    // Click mouse
+    device.mouse_click(MouseButton::Left, true)?;  // Press
+    device.mouse_click(MouseButton::Left, false)?; // Release
+    
+    Ok(())
+}
+```
+
 ## Features
 
 - ✅ **Relative Mouse Movement**: Move the mouse cursor by a given x/y offset.

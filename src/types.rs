@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[repr(C)]
 pub struct RzControl {
     pub unk1: u32,

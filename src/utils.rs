@@ -37,7 +37,7 @@ struct ObjectDirectoryInformation {
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust,ignore
 /// let result = find_sym_link("C:\\Windows\\System32", "symlink_name");
 /// match result {
 ///     Ok(name) => println!("Found symbolic link: {}", name),
