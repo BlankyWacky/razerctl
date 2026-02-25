@@ -20,9 +20,17 @@ const RAZER_IOCTL_CODE: u32 = 0x88883020;
 /// Represents a connection to the Razer device.
 /// 
 /// The handle to the device is automatically closed when this struct goes out of scope.
+#[derive(Debug)]
 pub struct RazerDevice {
     handle: HANDLE,
 }
+
+// Safety: The Windows HANDLE is owned exclusively by RazerDevice.
+// Operations using the handle (DeviceIoControl) are thread-safe at the OS level
+// as long as we don't close it while another thread is using it.
+// `&mut self` requirement for methods ensures we don't have data races.
+unsafe impl Send for RazerDevice {}
+unsafe impl Sync for RazerDevice {}
 
 impl RazerDevice {
     /// Initializes a new connection to the Razer device.
